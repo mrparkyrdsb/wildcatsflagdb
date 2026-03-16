@@ -18,6 +18,13 @@ sheets = {
     'defenseStats' : db.worksheet("defenseStats")
 }
 
+# streamlit configuration
+st.set_page_config(
+    page_title="GWW Wildcats Flag Football Database",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 def trophies_page():
     trophies = sheets['trophies'].get_all_records()
     df_trophies = pd.DataFrame(trophies)
