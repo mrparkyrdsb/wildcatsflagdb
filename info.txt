@@ -3,3 +3,4 @@ source venv/bin/activate
 
 # installed packages
 1. gspread
+2. streamlit
