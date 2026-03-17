@@ -30,8 +30,8 @@ def trophies_page():
     df_trophies = pd.DataFrame(trophies)
     
     # Streamlit elements written
-    st.title("GWW Wildcats Trophies")
-    st.write(df_trophies)
+    st.title("🏆 GWW Wildcats Trophies")
+    st.dataframe(df_trophies, hide_index=True)
 # end of trophies()
 
 def games_page():
@@ -43,7 +43,7 @@ def games_page():
     df_games = df_games.sort_values(by='Date', ascending=False)
    
     # Streamit elements
-    st.title("Game Results")
+    st.title(":material/sports_score: Game Results")
 
     # Column
     col1, col2 = st.columns(2)
@@ -75,8 +75,8 @@ def games_page():
 # end of games()
 
 pages = st.navigation([
-    st.Page(trophies_page, title="Wildcats Trophies"),
-    st.Page(games_page, title="Game Results")
+    st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
+    st.Page(games_page, title="Game Results", icon=":material/sports_score:")
 ])
 
 pages.run()
