@@ -71,12 +71,33 @@ def games_page():
         filtered_games = df_games[mask]
         st.write("Results:")
         st.dataframe(filtered_games, hide_index=True)
-    
 # end of games()
+
+def defense_page():
+    defense = sheets['defenseStats'].get_all_records()
+    df_defense = pd.DataFrame(defense) # turns defense in to pandas dataframe
+    df_defense = df_defense.drop(columns=['Date'])
+    df_defense['Athlete'] = df_defense.apply(lambda x: f"{x['First']} {x['Last'][0]}.", axis=1)
+    df_defense = df_defense.drop(columns=['First'])
+    df_defense = df_defense.drop(columns=['Last'])
+    df_defense = df_defense[['SN','Athlete','Flags','Deflections','Interceptions','Sacks','Touchdowns']].groupby('SN').agg({
+        'Athlete': 'first', 
+        'Flags': 'sum',
+        'Deflections': 'sum',
+        'Interceptions': 'sum',
+        'Sacks': 'sum',
+        'Touchdowns': 'sum'
+    })
+    #df_defense = df_defense.fillna(0)
+
+    st.title("🛡 GWW Defensive Stats")
+    st.dataframe(df_defense, hide_index=True)
+# end of defense_page()
 
 pages = st.navigation([
     st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
-    st.Page(games_page, title="Game Results", icon=":material/sports_score:")
+    st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
+    st.Page(defense_page, title="Defense Stats", icon="🛡")
 ])
 
 pages.run()
