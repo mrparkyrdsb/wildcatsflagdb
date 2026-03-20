@@ -16,7 +16,8 @@ sheets = {
     'players' : db.worksheet("players"),
     'games' : db.worksheet("games"),
     'offenseStats' : db.worksheet("offenseStats"),
-    'defenseStats' : db.worksheet("defenseStats")
+    'defenseStats' : db.worksheet("defenseStats"),
+    'staff' : db.worksheet("staff")
 }
 
 # streamlit configuration
@@ -25,6 +26,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+def home():
+    pass    
+# end of home()
 
 def trophies_page():
     trophies = sheets['trophies'].get_all_records()
