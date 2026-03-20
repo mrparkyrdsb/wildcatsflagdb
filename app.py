@@ -2,11 +2,12 @@ import gspread
 import streamlit as st
 import pandas as pd
 
-# replace line 4 with dictionary when deploying
-gc = gspread.service_account(filename='./google_details.json')
+# gc = gspread.service_account(filename='./google_details.json')
+creds_dict = dict(st.secrets.gcreds)
+gc = gspread.service_account_from_dict(creds_dict)
 
 # spreadsheet
-db = gc.open_by_key("1xq3H5Z5Ky5JfKLXx88UHA8XsyAwf9hxU_dz-jfll5wY")
+db = gc.open_by_key(st.secrets.GS.sheet_url)
 
 # sheets
 sheets = {
