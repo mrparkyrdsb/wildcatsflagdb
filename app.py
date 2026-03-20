@@ -273,15 +273,69 @@ def defense_page():
     st.dataframe(df_defense, hide_index=True)
 # end of defense_page()
 
+def offense_page():
+    offense = sheets['offenseStats'].get_all_records()
+    df_offense = pd.DataFrame(offense)
+    df_offense['Athlete'] = df_offense.apply(lambda x: f"{x['First']} {x['Last'][0]}", axis=1)
+    df_offense = df_offense.drop(columns=['First'])
+    df_offense = df_offense.drop(columns=['Last'])
+
+    df_passing = df_offense[['Date', 'SN', 'Athlete', 'p_TD', 'p_INT', 'p_1st', 'p_1pt', 'p_2pt', 'p_attempts', 'p_completions']]
+    df_rushing = df_offense[['Date', 'SN', 'Athlete', 'rb_td', 'rb_1st', 'rb_1pt', 'rb_2pt', 'rb_attempts']]
+    df_receiving = df_offense[['Date', 'SN', 'Athlete', 'wr_rec', 'wr_td', 'wr_1st', 'wr_1pt', 'wr_2pt', 'wr_drops']]
+    
+    df_passing = df_passing[df_passing[['p_TD', 'p_INT', 'p_1st', 'p_1pt', 'p_2pt', 'p_attempts', 'p_completions']].sum(axis=1) > 0]
+    df_rushing = df_rushing[df_rushing[['rb_td', 'rb_1st', 'rb_1pt', 'rb_2pt', 'rb_attempts']].sum(axis=1) > 0]
+    df_receiving = df_receiving[df_receiving[['wr_rec', 'wr_td', 'wr_1st', 'wr_1pt', 'wr_2pt', 'wr_drops']].sum(axis=1) > 0]
+
+    df_passing = df_passing[['SN', 'Athlete', 'p_TD', 'p_INT', 'p_1st', 'p_1pt', 'p_2pt', 'p_attempts', 'p_completions']].groupby('SN').agg({
+        'Athlete': 'first', 
+        'p_TD': 'sum',
+        'p_INT': 'sum',
+        'p_1pt': 'sum',
+        'p_2pt': 'sum',
+        'p_attempts': 'sum',
+        'p_completions': 'sum'
+    })
+
+    df_passing = df_passing.rename(columns={
+        'p_TD': 'Passing TD',
+        'p_INT': 'Interceptions', 
+        'p_1st': '1st Downs', 
+        'p_1pt': '1pt Converts', 
+        'p_2pt': '2pt Converts', 
+        'p_attempts': 'Passing Attempts', 
+        'p_completions': 'Completion'
+    })
+
+    df_rushing = df_rushing.rename(columns={
+        'rb_td': 'Rushing TD', 
+        'rb_1st': '1st Downs', 
+        'rb_1pt': '1pt Converts', 
+        'rb_2pt': '2pt Converts', 
+        'rb_attempts': 'Rushing Attempts'
+    })
+
+    df_receiving = df_receiving.rename(columns={
+        'wr_rec': 'Receptions', 
+        'wr_td': 'Receiving TD', 
+        'wr_1st': '1st Downs', 
+        'wr_1pt': '1pt Converts', 
+        'wr_2pt': '2pt Converts', 
+        'wr_drops': 'Drops'
+    })
+
+    st.write(df_passing)
+    st.write(df_rushing)
+    st.write(df_receiving)
+# end of offense_page()
+
 pages = st.navigation([
     st.Page(home, title="Home", icon="🏠"),
     st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
     st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
+    st.Page(offense_page, title="Offense Stats", icon="🏈"),
     st.Page(defense_page, title="Defense Stats", icon="🛡")
 ])
 
 pages.run()
-
-# # Offensive Stats
-# o_stats = sheets['offenseStats'].get_all_records()
-# print(o_stats)
