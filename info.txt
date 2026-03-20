@@ -7,3 +7,5 @@ source venv/bin/activate
 
 # emoji shortcodes link
 https://www.webfx.com/tools/emoji-cheat-sheet/
+
+# only push on main
