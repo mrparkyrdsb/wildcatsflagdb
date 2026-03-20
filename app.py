@@ -111,15 +111,42 @@ def home():
     # End of quick info
 
     # Tournament, Games and Events
-    st.subheader("Major Events")
+    st.subheader("Major Upcoming Events")
     for line in games:
         st.write(line)
+    # End of Tournament, Games and Events
 
+    # Team Picture
     st.space(size="medium")
     #st.image("./src/team.jpg", width="stretch", caption="William's Girls Flag Classic 03/05/2026")
     st.image("https://github.com/mrparkyrdsb/wildcatsflagdb/blob/main/src/team.jpg?raw=true", width="stretch", caption="William's Girls Flag Classic 03/05/2026")
     st.space(size="medium")
+    # End of Team Picture
 
+    # Coaches
+    staff = sheets['staff'].get_all_records()
+    staff_names = []
+    for line in staff:
+        coach = f"{line["first"][0]}. {line["last"]}"
+        staff_names.append(coach)
+
+    st.subheader("Coaching Staff")
+    
+    coach_tabs = st.tabs(staff_names)
+    for tab, line in zip(coach_tabs, staff):
+        with tab:
+            st.space(size="small")
+            if not line["img_link"]:
+                #st.image("./src/placeholder.png", width=96)
+                st.image("https://github.com/mrparkyrdsb/wildcatsflagdb/blob/main/src/placeholder.png?raw=true", width=96)
+            else:
+                st.image(line["img_link"], width=96)
+
+            coach = f"{line["first"][0]}. {line["last"]}"
+            st.write(coach)
+    # end of coaches
+
+    # School & Map
     school_map = pd.DataFrame({
         'lat': [44.0151309],
         'lon': [-79.4637783],
@@ -135,6 +162,7 @@ def home():
 
     with map_col2:
         st.map(school_map, size=40, color='#ff4b4b', zoom=11)
+    # end of school & map
 
 
 # end of home()
