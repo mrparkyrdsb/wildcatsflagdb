@@ -188,12 +188,49 @@ def games_page():
 # end of games()
 
 def defense_page():
+    st.title("🛡 GWW Defensive Stats")
+
     defense = sheets['defenseStats'].get_all_records()
     df_defense = pd.DataFrame(defense) # turns defense in to pandas dataframe
-    df_defense = df_defense.drop(columns=['Date'])
-    df_defense['Athlete'] = df_defense.apply(lambda x: f"{x['First']} {x['Last'][0]}.", axis=1)
+
+    # Year Filter
+    unique_year = set()
+    for table in defense:
+        row_year = table['Date'].split("/")[-1]
+        unique_year.add(row_year)
+    
+    unique_year = sorted(unique_year, reverse=True)
+    year_choice = st.selectbox(
+        label="Select a year",
+        index=None,
+        options=unique_year,
+        placeholder="Year"
+    )
+
+    if year_choice is not None:
+        mask = df_defense['Date'].str.endswith(year_choice)
+        df_defense = df_defense[mask]
+
+    # if not year_choice:
+    #     df_defense = df_defense.drop(columns=['Date'])
+    # end of year filter
+    
+    df_defense['Athlete'] = df_defense.apply(lambda x: f"{x['First']} {x['Last'][0]}", axis=1)
     df_defense = df_defense.drop(columns=['First'])
     df_defense = df_defense.drop(columns=['Last'])
+
+    # Athlete Filter
+    athlete_choice = st.selectbox(
+        label="Select an athlete",
+        index=None,
+        options=df_defense['Athlete'].unique(),
+        placeholder="Athlete Name"
+    )
+
+    if athlete_choice is not None:
+        mask = df_defense['Athlete'] == athlete_choice
+        df_defense = df_defense[mask]
+
     df_defense = df_defense[['SN','Athlete','Flags','Deflections','Interceptions','Sacks','Touchdowns']].groupby('SN').agg({
         'Athlete': 'first', 
         'Flags': 'sum',
@@ -202,9 +239,9 @@ def defense_page():
         'Sacks': 'sum',
         'Touchdowns': 'sum'
     })
-    #df_defense = df_defense.fillna(0)
 
-    st.title("🛡 GWW Defensive Stats")
+    if year_choice and athlete_choice:
+        st.subheader(f"{athlete_choice} - {year_choice} stats")
     st.dataframe(df_defense, hide_index=True)
 # end of defense_page()
 
