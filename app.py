@@ -358,7 +358,7 @@ def offense_page():
 
     df_rushing = df_rushing[['SN', 'Athlete', 'rb_td', 'rb_1st', 'rb_1pt', 'rb_2pt', 'rb_attempts']].groupby('SN').agg({
         'Athlete': 'first', 
-        'rb_TD': 'sum',
+        'rb_td': 'sum',
         'rb_1st': 'sum',
         'rb_1pt': 'sum',
         'rb_2pt': 'sum',
@@ -368,7 +368,7 @@ def offense_page():
     df_receiving = df_receiving[['SN', 'Athlete', 'wr_rec', 'wr_td', 'wr_1st', 'wr_1pt', 'wr_2pt', 'wr_drops']].groupby('SN').agg({
         'Athlete': 'first', 
         'wr_rec': 'sum',
-        'wr_TD': 'sum',
+        'wr_td': 'sum',
         'wr_1st': 'sum',
         'wr_1pt': 'sum',
         'wr_2pt': 'sum',
@@ -430,7 +430,7 @@ def offense_page():
         st.dataframe(df_passing, column_config={"SN":None, "Date":None},hide_index=True)
         st.subheader(f"{year_choice} Rushing Stats for {athlete_choice}.")
         st.dataframe(df_rushing, column_config={"SN":None, "Date":None},hide_index=True)
-        st.heasubheaderder(f"{year_choice} Receiving Stats for {athlete_choice}.")
+        st.subheader(f"{year_choice} Receiving Stats for {athlete_choice}.")
         st.dataframe(df_receiving, column_config={"SN":None, "Date":None},hide_index=True)
 # end of offense_page()
 
