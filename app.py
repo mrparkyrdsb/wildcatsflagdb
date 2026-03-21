@@ -1,28 +1,46 @@
 import gspread
+from google.oauth2.service_account import Credentials
 import streamlit as st
 import pandas as pd
 from datetime import datetime 
 
+@st.cache_resource
+def get_gspread_client():
+    # Pull credentials from your Streamlit secrets
+    creds_dict = dict(st.secrets["gcreds"]) 
+    return gspread.service_account_from_dict(creds_dict)
+
 @st.cache_data(ttl=3600)
 def get_sheets():
     # gc = gspread.service_account(filename='./google_details.json')
-    creds_dict = dict(st.secrets.gcreds)
-    gc = gspread.service_account_from_dict(creds_dict)
+    gc = get_gspread_client()
 
     # spreadsheet
     db = gc.open_by_key(st.secrets.GS.sheet_url)
 
-    result =  = {
-        'trophies' : db.worksheet("trophies"),
-        'rosters' : db.worksheet("rosters"),
-        'players' : db.worksheet("players"),
-        'games' : db.worksheet("games"),
-        'offenseStats' : db.worksheet("offenseStats"),
-        'defenseStats' : db.worksheet("defenseStats"),
-        'staff' : db.worksheet("staff"),
-        'current_team' : db.worksheet("current_team"),
-        'dates' : db.worksheet("dates")
-    }
+    # result = {
+    #     'trophies' : db.worksheet("trophies"),
+    #     'rosters' : db.worksheet("rosters"),
+    #     'players' : db.worksheet("players"),
+    #     'games' : db.worksheet("games"),
+    #     'offenseStats' : db.worksheet("offenseStats"),
+    #     'defenseStats' : db.worksheet("defenseStats"),
+    #     'staff' : db.worksheet("staff"),
+    #     'current_team' : db.worksheet("current_team"),
+    #     'dates' : db.worksheet("dates")
+    # }
+    worksheet_names = [
+        'trophies', 'rosters', 'players', 'games', 
+        'offenseStats', 'defenseStats', 'staff', 
+        'current_team', 'dates'
+    ]
+
+    result = {}
+    for name in worksheet_names:
+        ws = db.worksheet(name)
+        result[name] = pd.DataFrame(ws.get_all_records())
+
+    return result
 # end of get_sheets()
 
 # sheets
@@ -63,7 +81,8 @@ def home():
     
     with q_col2:
         teams_col1, teams_col2 = st.columns(2)
-        teams = sheets['current_team'].get_all_records()
+        #teams = sheets['current_team'].get_all_records()
+        teams = sheets['current_team'].to_dict(orient="records")
         team5s = []
         team7s = []
         current_year = datetime.now().year
@@ -91,7 +110,7 @@ def home():
             else:
                 st.write("No 7v7 team this season")
 
-    dates = sheets['dates'].get_all_records()
+    dates = sheets['dates'].to_dict(orient="records")
     tryouts = []
     games = []
     other_events = []
@@ -129,7 +148,7 @@ def home():
     # End of Team Picture
 
     # Coaches
-    staff = sheets['staff'].get_all_records()
+    staff = sheets['staff'].to_dict(orient="records")
     staff_names = []
     for line in staff:
         coach = f"{line["first"][0]}. {line["last"]}"
@@ -173,7 +192,7 @@ def home():
 # end of home()
 
 def trophies_page():
-    trophies = sheets['trophies'].get_all_records()
+    trophies = sheets['trophies'].to_dict(orient="records")
     df_trophies = pd.DataFrame(trophies)
     
     # Streamlit elements written
@@ -183,7 +202,7 @@ def trophies_page():
 
 def games_page():
     # Grab data from Google Sheets
-    games = sheets['games'].get_all_records()
+    games = sheets['games'].to_dict(orient="records")
     # Set up Dataframe
     df_games = pd.DataFrame(games)
     df_games['Date'] = pd.to_datetime(df_games['Date'])
@@ -223,7 +242,7 @@ def games_page():
 def defense_page():
     st.title("🛡 GWW Defensive Stats")
 
-    defense = sheets['defenseStats'].get_all_records()
+    defense = sheets['defenseStats'].to_dict(orient="records")
     df_defense = pd.DataFrame(defense) # turns defense in to pandas dataframe
 
     # Year Filter
@@ -279,7 +298,7 @@ def defense_page():
 # end of defense_page()
 
 def offense_page():
-    offense = sheets['offenseStats'].get_all_records()
+    offense = sheets['offenseStats'].to_dict(orient="records")
     df_offense = pd.DataFrame(offense)
     df_offense['Athlete'] = df_offense.apply(lambda x: f"{x['First']} {x['Last'][0]}", axis=1)
     df_offense = df_offense.drop(columns=['First'])
@@ -341,6 +360,10 @@ pages = st.navigation([
     st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
     st.Page(defense_page, title="Defense Stats", icon="🛡")
 ])
+
+if st.sidebar.button("Refresh Data from Google"):
+    st.cache_data.clear()
+    st.rerun()
 
 # pages = st.navigation([
 #     st.Page(home, title="Home", icon="🏠"),
