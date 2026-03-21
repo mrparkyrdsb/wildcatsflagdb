@@ -3,25 +3,30 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime 
 
-# gc = gspread.service_account(filename='./google_details.json')
-creds_dict = dict(st.secrets.gcreds)
-gc = gspread.service_account_from_dict(creds_dict)
+@st.cache_data(ttl=3600)
+def get_sheets():
+    # gc = gspread.service_account(filename='./google_details.json')
+    creds_dict = dict(st.secrets.gcreds)
+    gc = gspread.service_account_from_dict(creds_dict)
 
-# spreadsheet
-db = gc.open_by_key(st.secrets.GS.sheet_url)
+    # spreadsheet
+    db = gc.open_by_key(st.secrets.GS.sheet_url)
+
+    result =  = {
+        'trophies' : db.worksheet("trophies"),
+        'rosters' : db.worksheet("rosters"),
+        'players' : db.worksheet("players"),
+        'games' : db.worksheet("games"),
+        'offenseStats' : db.worksheet("offenseStats"),
+        'defenseStats' : db.worksheet("defenseStats"),
+        'staff' : db.worksheet("staff"),
+        'current_team' : db.worksheet("current_team"),
+        'dates' : db.worksheet("dates")
+    }
+# end of get_sheets()
 
 # sheets
-sheets = {
-    'trophies' : db.worksheet("trophies"),
-    'rosters' : db.worksheet("rosters"),
-    'players' : db.worksheet("players"),
-    'games' : db.worksheet("games"),
-    'offenseStats' : db.worksheet("offenseStats"),
-    'defenseStats' : db.worksheet("defenseStats"),
-    'staff' : db.worksheet("staff"),
-    'current_team' : db.worksheet("current_team"),
-    'dates' : db.worksheet("dates")
-}
+sheets = get_sheets()
 
 # streamlit configuration
 st.set_page_config(
