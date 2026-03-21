@@ -339,8 +339,15 @@ pages = st.navigation([
     st.Page(home, title="Home", icon="🏠"),
     st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
     st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
-    st.Page(offense_page, title="Offense Stats", icon="🏈"),
     st.Page(defense_page, title="Defense Stats", icon="🛡")
 ])
+
+# pages = st.navigation([
+#     st.Page(home, title="Home", icon="🏠"),
+#     st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
+#     st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
+#     st.Page(offense_page, title="Offense Stats", icon="🏈"),
+#     st.Page(defense_page, title="Defense Stats", icon="🛡")
+# ])
 
 pages.run()
