@@ -18,17 +18,6 @@ def get_sheets():
     # spreadsheet
     db = gc.open_by_key(st.secrets.GS.sheet_url)
 
-    # result = {
-    #     'trophies' : db.worksheet("trophies"),
-    #     'rosters' : db.worksheet("rosters"),
-    #     'players' : db.worksheet("players"),
-    #     'games' : db.worksheet("games"),
-    #     'offenseStats' : db.worksheet("offenseStats"),
-    #     'defenseStats' : db.worksheet("defenseStats"),
-    #     'staff' : db.worksheet("staff"),
-    #     'current_team' : db.worksheet("current_team"),
-    #     'dates' : db.worksheet("dates")
-    # }
     worksheet_names = [
         'trophies', 'rosters', 'players', 'games', 
         'offenseStats', 'defenseStats', 'staff', 
@@ -40,7 +29,7 @@ def get_sheets():
         ws = db.worksheet(name)
         result[name] = pd.DataFrame(ws.get_all_records())
 
-    return result
+    return result # returns a table of dataframes
 # end of get_sheets()
 
 # sheets
@@ -304,9 +293,54 @@ def offense_page():
     df_offense = df_offense.drop(columns=['First'])
     df_offense = df_offense.drop(columns=['Last'])
 
+    # Streamlit contents
+    st.header("🏈 GWW Offensive Stats")
+
+    col1, col2 = st.columns(2)
+    # Year Filter
+    with col1:
+        unique_year = set()
+        for table in offense:
+            row_year = table['Date'].split("/")[-1]
+            unique_year.add(row_year)
+        
+        unique_year = sorted(unique_year, reverse=True)
+        year_choice = st.selectbox(
+            label="Select a year",
+            index=None,
+            options=unique_year,
+            placeholder="Year"
+        )
+
+    # Athlete Filter
+    with col2:
+        athlete_choice = st.selectbox(
+            label="Select an athlete",
+            index=None,
+            options=df_offense['Athlete'].unique(),
+            placeholder="Athlete Name"
+        )
+    # end of filter contents
+
     df_passing = df_offense[['Date', 'SN', 'Athlete', 'p_TD', 'p_INT', 'p_1st', 'p_1pt', 'p_2pt', 'p_attempts', 'p_completions']]
     df_rushing = df_offense[['Date', 'SN', 'Athlete', 'rb_td', 'rb_1st', 'rb_1pt', 'rb_2pt', 'rb_attempts']]
     df_receiving = df_offense[['Date', 'SN', 'Athlete', 'wr_rec', 'wr_td', 'wr_1st', 'wr_1pt', 'wr_2pt', 'wr_drops']]
+
+    if year_choice is not None:
+        mask = df_passing['Date'].str.endswith(year_choice)
+        df_passing = df_passing[mask]
+        mask = df_rushing['Date'].str.endswith(year_choice)
+        df_rushing = df_rushing[mask]
+        mask = df_receiving['Date'].str.endswith(year_choice)
+        df_receiving = df_receiving[mask]
+    
+    if athlete_choice is not None:
+        mask = df_passing['Athlete'].str.endswith(athlete_choice)
+        df_passing = df_passing[mask]
+        mask = df_rushing['Athlete'].str.endswith(athlete_choice)
+        df_rushing = df_rushing[mask]
+        mask = df_receiving['Athlete'].str.endswith(athlete_choice)
+        df_receiving = df_receiving[mask]       
     
     df_passing = df_passing[df_passing[['p_TD', 'p_INT', 'p_1st', 'p_1pt', 'p_2pt', 'p_attempts', 'p_completions']].sum(axis=1) > 0]
     df_rushing = df_rushing[df_rushing[['rb_td', 'rb_1st', 'rb_1pt', 'rb_2pt', 'rb_attempts']].sum(axis=1) > 0]
@@ -349,15 +383,43 @@ def offense_page():
         'wr_drops': 'Drops'
     })
 
-    st.write(df_passing)
-    st.write(df_rushing)
-    st.write(df_receiving)
+    st.space("small")
+
+    if year_choice is None and athlete_choice is None:
+        st.subheader("Passing Stats")
+        st.dataframe(df_passing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader("Rushing Stats")
+        st.dataframe(df_rushing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader("Receiving Stats")
+        st.dataframe(df_receiving, column_config={"SN":None, "Date":None},hide_index=True)
+    elif year_choice is not None and athlete_choice is None:
+        st.subheader(f"{year_choice} Passing Stats")
+        st.dataframe(df_passing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader(f"{year_choice} Rushing Stats")
+        st.dataframe(df_rushing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader(f"{year_choice} Receiving Stats")
+        st.dataframe(df_receiving, column_config={"SN":None, "Date":None},hide_index=True)
+    elif year_choice is None and athlete_choice is not None:
+        st.subheader(f"Passing Stats for {athlete_choice}.")
+        st.dataframe(df_passing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader(f"Rushing Stats for {athlete_choice}.")
+        st.dataframe(df_rushing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader(f"Receiving Stats for {athlete_choice}.")
+        st.dataframe(df_receiving, column_config={"SN":None, "Date":None},hide_index=True)
+    elif year_choice is not None and athlete_choice is not None:
+        st.subheader(f"{year_choice} Passing Stats for {athlete_choice}.")
+        st.dataframe(df_passing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.subheader(f"{year_choice} Rushing Stats for {athlete_choice}.")
+        st.dataframe(df_rushing, column_config={"SN":None, "Date":None},hide_index=True)
+        st.heasubheaderder(f"{year_choice} Receiving Stats for {athlete_choice}.")
+        st.dataframe(df_receiving, column_config={"SN":None, "Date":None},hide_index=True)
 # end of offense_page()
 
 pages = st.navigation([
     st.Page(home, title="Home", icon="🏠"),
     st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
     st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
+    st.Page(offense_page, title="Offense Stats", icon="🏈"),
     st.Page(defense_page, title="Defense Stats", icon="🛡")
 ])
 
