@@ -21,7 +21,7 @@ def get_sheets():
     worksheet_names = [
         'trophies', 'rosters', 'players', 'games', 
         'offenseStats', 'defenseStats', 'staff', 
-        'current_team', 'dates'
+        'current_team', 'dates', 'homepage'
     ]
 
     result = {}
@@ -39,7 +39,7 @@ sheets = get_sheets()
 st.set_page_config(
     page_title="GWW Wildcats Flag Football Database",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 def home():
@@ -47,7 +47,7 @@ def home():
     col1, col2 = st.columns([1,8])
     with col1:
         st.image("https://github.com/mrparkyrdsb/wildcatsflagdb/blob/main/src/wildcat.png?raw=true", width="content")
-    
+        
     with col2:
         st.title("Wildcats Flag Football Database")
         st.write("Dr. G.W. Williams Secondary School's Flag Football Program")
@@ -131,8 +131,9 @@ def home():
 
     # Team Picture
     st.space(size="medium")
-    #st.image("./src/team.jpg", width="stretch", caption="William's Girls Flag Classic 03/05/2026")
-    st.image("https://github.com/mrparkyrdsb/wildcatsflagdb/blob/main/src/team.jpg?raw=true", width="stretch", caption="William's Girls Flag Classic 03/05/2026")
+    homepage = sheets["homepage"]
+    banner_link = str(homepage["display_url"].iloc[-1])
+    st.image(banner_link, width="content")
     st.space(size="medium")
     # End of Team Picture
 
@@ -150,7 +151,6 @@ def home():
         with tab:
             st.space(size="small")
             if not line["img_link"]:
-                #st.image("./src/placeholder.png", width=96)
                 st.image("https://github.com/mrparkyrdsb/wildcatsflagdb/blob/main/src/placeholder.png?raw=true", width=96)
             else:
                 st.image(line["img_link"], width=96)
@@ -230,6 +230,7 @@ def games_page():
 
 def defense_page():
     st.title("🛡 GWW Defensive Stats")
+    st.space("small")
 
     defense = sheets['defenseStats'].to_dict(orient="records")
     df_defense = pd.DataFrame(defense) # turns defense in to pandas dataframe
@@ -251,10 +252,6 @@ def defense_page():
     if year_choice is not None:
         mask = df_defense['Date'].str.endswith(year_choice)
         df_defense = df_defense[mask]
-
-    # if not year_choice:
-    #     df_defense = df_defense.drop(columns=['Date'])
-    # end of year filter
     
     df_defense['Athlete'] = df_defense.apply(lambda x: f"{x['First']} {x['Last'][0]}", axis=1)
     df_defense = df_defense.drop(columns=['First'])
@@ -281,6 +278,7 @@ def defense_page():
         'Touchdowns': 'sum'
     })
 
+    st.space("small")
     if year_choice and athlete_choice:
         st.subheader(f"{athlete_choice} - {year_choice} stats")
     st.dataframe(df_defense, hide_index=True)
@@ -445,13 +443,5 @@ pages = st.navigation([
 if st.sidebar.button("Refresh Data from Google"):
     st.cache_data.clear()
     st.rerun()
-
-# pages = st.navigation([
-#     st.Page(home, title="Home", icon="🏠"),
-#     st.Page(trophies_page, title="Wildcats Trophies", icon="🏆"),
-#     st.Page(games_page, title="Game Results", icon=":material/sports_score:"),
-#     st.Page(offense_page, title="Offense Stats", icon="🏈"),
-#     st.Page(defense_page, title="Defense Stats", icon="🛡")
-# ])
 
 pages.run()
