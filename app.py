@@ -131,8 +131,9 @@ def home():
 
     # Team Picture
     st.space(size="medium")
-    homepage = sheets["homepage"]
-    banner_link = str(homepage["display_url"].iloc[-1])
+    homepage = sheets["homepage"].to_dict(orient="records")
+    print(homepage)
+    banner_link = str(homepage[-1]['display_url'])
     st.image(banner_link, width="content")
     st.space(size="medium")
     # End of Team Picture
@@ -269,12 +270,13 @@ def defense_page():
         mask = df_defense['Athlete'] == athlete_choice
         df_defense = df_defense[mask]
 
-    df_defense = df_defense[['SN','Athlete','Flags','Deflections','Interceptions','Sacks','Touchdowns']].groupby('SN').agg({
+    df_defense = df_defense[['SN','Athlete','Flags','Deflections','Interceptions','Sacks','Safety', 'Touchdowns']].groupby('SN').agg({
         'Athlete': 'first', 
         'Flags': 'sum',
         'Deflections': 'sum',
         'Interceptions': 'sum',
         'Sacks': 'sum',
+        'Safety': 'sum',
         'Touchdowns': 'sum'
     })
 
