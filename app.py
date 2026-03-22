@@ -254,7 +254,7 @@ def defense_page():
         mask = df_defense['Date'].str.endswith(year_choice)
         df_defense = df_defense[mask]
     
-    df_defense['Athlete'] = df_defense.apply(lambda x: f"{x['First']} {x['Last'][0]}", axis=1)
+    df_defense['Athlete'] = df_defense.apply(lambda x: f"{x['First']} {x['Last'][0]} ({str(x['SN'])[-1:-5:-1]})", axis=1)
     df_defense = df_defense.drop(columns=['First'])
     df_defense = df_defense.drop(columns=['Last'])
 
@@ -289,7 +289,7 @@ def defense_page():
 def offense_page():
     offense = sheets['offenseStats'].to_dict(orient="records")
     df_offense = pd.DataFrame(offense)
-    df_offense['Athlete'] = df_offense.apply(lambda x: f"{x['First']} {x['Last'][0]}", axis=1)
+    df_offense['Athlete'] = df_offense.apply(lambda x: f"{x['First']} {x['Last'][0]} ({str(x['SN'])[-1:-5:-1]})", axis=1)
     df_offense = df_offense.drop(columns=['First'])
     df_offense = df_offense.drop(columns=['Last'])
 
